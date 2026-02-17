@@ -42,7 +42,9 @@ export const register = async (req, res, next) => {
     res.cookie("refreshToken", refreshToken, refreshCookieOptions);
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
-      secure: false,
+      secure: process.env.NODE_ENV == "development"
+        ? false
+        : true,
       sameSite: "lax",
     });
     return res.status(201).json({

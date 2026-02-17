@@ -1,4 +1,3 @@
-import User from "../models/user.js";
 // Get all users
 // This is used to return every user in the database
 export const getAllUsers = async (req, res, next) => {
