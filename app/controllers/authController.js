@@ -10,13 +10,16 @@ import {
 // REGISTER
 export const register = async (req, res, next) => {
   try {
-    const { username, password, email } = req.body;
+    let { username, password, email } = req.body;
     if (!username || !password || !email) {
       return res.status(400).json({
         success: false,
         error: "Username, email address, and password required",
       });
     }
+
+    username = username.toLowerCase();
+    email = email.toLowerCase();
     const exists = await User.findOne({
       $or: [{ username }, { email }],
     });
@@ -38,17 +41,11 @@ export const register = async (req, res, next) => {
 
     user.refreshTokens.push({ jti });
     await user.save();
+    res.cookie("refreshToken", refreshToken, refreshCookieOptions); /* <-- Refresh cookie */
 
-    res.cookie("refreshToken", refreshToken, refreshCookieOptions);
-    res.cookie("accessToken", accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV == "development"
-        ? false
-        : true,
-      sameSite: "lax",
-    });
     return res.status(201).json({
       success: true,
+      accessToken,
       user: {
         id: user._id,
         username: user.username,
@@ -64,12 +61,25 @@ export const register = async (req, res, next) => {
 export const login = async (req, res, next) => {
   try {
     const { username, password } = req.body;
-    const user = await User.findOne({ username }).select("+password");
-    if (!user)
-      return res.status(401).json({ success: false, error: "Incorrect username or password" });
+    const identifier = username.toLowerCase();
+    const user = await User.findOne({
+      $or: [{ username: identifier }, { email: identifier }],
+    }).select("+password");
+
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        error: "Incorrect username or password",
+      });
+    }
+
     const match = await bcrypt.compare(password, user.password);
-    if (!match)
-      return res.status(401).json({ success: false, error: "Incorrect username or password" });
+    if (!match) {
+      return res.status(401).json({
+        success: false,
+        error: "Incorrect username or password",
+      });
+    }
     const accessToken = signAccessToken(user);
     const jti = newJti();
     const refreshToken = signRefreshToken(user, jti);
@@ -77,14 +87,10 @@ export const login = async (req, res, next) => {
     await user.save();
 
     res.cookie("refreshToken", refreshToken, refreshCookieOptions);
-    res.cookie("accessToken", accessToken, {
-      httpOnly: true,
-      secure: false,
-      sameSite: "lax",
-    });
 
     return res.status(200).json({
       success: true,
+      accessToken,
       user: {
         id: user._id,
         username: user.username,
@@ -97,55 +103,38 @@ export const login = async (req, res, next) => {
 };
 // REFRESH TOKEN
 export const refresh = async (req, res) => {
-  const token = req.cookies?.refreshToken;
-  if (!token)
-    return res.status(401).json({ success: false, error: "No refresh token" });
-
   try {
-    const decoded = jwt.verify(token, process.env.REFRESH_SECRET);
-    const { id, jti } = decoded;
-    const user = await User.findById(id);
-    if (!user)
-      return res.status(401).json({ success: false, error: "Invalid session" });
-    const exists = user.refreshTokens.some((t) => t.jti === jti);
-    if (!exists)
-      return res.status(401).json({ success: false, error: "Session revoked" });
-    user.refreshTokens = user.refreshTokens.filter((t) => t.jti !== jti);
-    const newTokenId = newJti();
-    user.refreshTokens.push({ jti: newTokenId });
-    await user.save();
-
-    const newRefreshToken = signRefreshToken(user, newTokenId);
-    res.cookie("refreshToken", newRefreshToken, refreshCookieOptions);
-    const newAccessToken = signAccessToken(user);
-    res.cookie("accessToken", newAccessToken, {
-      httpOnly: true,
-      secure: false,
-      sameSite: "lax",
+    const refreshToken = req.cookies.refreshToken;
+    if (!refreshToken) {
+      return res.status(401).json({ success: false });
+    }
+    const decoded = jwt.verify(
+      refreshToken,
+      process.env.JWT_REFRESH_SECRET
+    );
+    const user = await User.findById(decoded.id);
+    if (!user) {
+      return res.status(401).json({ success: false });
+    }
+    const accessToken = signAccessToken(user);
+    return res.status(200).json({
+      success: true,
+      accessToken,
     });
-
-    return res.status(200).json({ success: true });
   } catch {
-    return res.status(401).json({
-      success: false,
-      error: "Invalid or expired refresh token",
-    });
+    return res.status(401).json({ success: false });
   }
 };
 // LOGOUT
 export const logout = async (req, res) => {
-  const token = req.cookies?.refreshToken;
-  res.clearCookie("refreshToken", refreshCookieOptions);
-  res.clearCookie("accessToken", {
-    httpOnly: true,
-    secure: false,
-    sameSite: "lax",
-  });
-  if (token) {
+  const refreshToken = req.cookies?.refreshToken;
+  if (refreshToken) {
     try {
-      const decoded = jwt.verify(token, process.env.REFRESH_SECRET);
+      const decoded = jwt.verify(
+        refreshToken,
+        process.env.JWT_REFRESH_SECRET
+      );
       const user = await User.findById(decoded.id);
-
       if (user) {
         user.refreshTokens = user.refreshTokens.filter(
           (t) => t.jti !== decoded.jti
@@ -154,6 +143,7 @@ export const logout = async (req, res) => {
       }
     } catch { }
   }
+  res.clearCookie("refreshToken", refreshCookieOptions); /* <-- Clear fresh cookie */
   return res.status(200).json({ success: true });
 };
 /* USER */

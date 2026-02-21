@@ -1,17 +1,5 @@
 import Comment from "../models/Comment.js";
 
-export const getComments = async (req, res, next) => {
-  try {
-    const { postId } = req.params;
-    const comments = await Comment.find({ post: postId })
-      .sort({ createdAt: -1 })
-      .populate("user", "username")
-      .select("content createdAt user likes");
-    res.status(200).json(comments);
-  } catch (err) {
-    next(err);
-  }
-};
 export const getCommentsByPostId = async (req, res, next) => {
   try {
     const { postId } = req.params;
@@ -74,7 +62,10 @@ export const updateComment = async (req, res, next) => {
     comment.content = content;
     await comment.save();
     const populated = await comment.populate("user", "username");
-    res.status(200).json(populated);
+    res.status(200).json({
+      success: true,
+      comment: populated,
+    });
   } catch (err) {
     next(err);
   }
@@ -94,7 +85,10 @@ export const createComment = async (req, res, next) => {
       user: req.user.id,
     });
     const populated = await comment.populate("user", "username");
-    res.status(201).json(populated);
+    res.status(201).json({
+      success: true,
+      comment: populated,
+    });
   } catch (err) {
     next(err);
   }

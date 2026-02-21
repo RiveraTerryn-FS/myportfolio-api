@@ -43,12 +43,24 @@ export const getPostBySlug = async (req, res, next) => {
     const post = await Post.findOneAndUpdate(
       { slug },
       { $inc: { views: 1 } },
-      { returnDocument: "after" }
-    );
+      { new: true }
+    )
+      .populate("user", "username")
+      .select("title content createdAt likes user type summary views slug");
     if (!post) {
-      return res.status(404).json({ message: "Post not found" });
+      return res.status(404).json({
+        success: false,
+        error: "Post not found",
+      });
     }
-    res.status(200).json(post);
+    const commentCount = await Comment.countDocuments({
+      post: post._id,
+    });
+    const postWithComments = {
+      ...post.toObject(),
+      commentsCount: commentCount,
+    };
+    return res.status(200).json(postWithComments);
   } catch (err) {
     next(err);
   }
@@ -56,15 +68,28 @@ export const getPostBySlug = async (req, res, next) => {
 export const getPostById = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const post = await Post.findById(id)
+    const post = await Post.findByIdAndUpdate(
+      id,
+      { $inc: { views: 1 } },
+      { new: true }
+    )
       .populate("user", "username")
-      .select("title content createdAt likes user");
+      .select("title content createdAt likes user type summary views slug");
     if (!post) {
       return res.status(404).json({
-        message: "Post not found",
+        success: false,
+        error: "Post not found",
       });
     }
-    res.status(200).json(post);
+    const commentCount = await Comment.countDocuments({
+      post: post._id,
+    });
+    const postWithComments = {
+      ...post.toObject(),
+      commentsCount: commentCount,
+    };
+
+    return res.status(200).json(postWithComments);
   } catch (err) {
     next(err);
   }

@@ -1,10 +1,15 @@
 import jwt from "jsonwebtoken";
-
 /* =========================
    REQUIRED AUTH
 ========================= */
 export function authenticateToken(req, res, next) {
-  const token = req.cookies?.accessToken;
+  let token;
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith("Bearer")
+  ) {
+    token = req.headers.authorization.split(" ")[1];
+  }
   if (!token) {
     return res.status(401).json({
       success: false,
@@ -15,7 +20,7 @@ export function authenticateToken(req, res, next) {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = {
       id: decoded.id,
-      email: decoded.email,
+      username: decoded.username,
       role: decoded.role,
     };
     next();
@@ -30,7 +35,13 @@ export function authenticateToken(req, res, next) {
    OPTIONAL AUTH
 ========================= */
 export function optAuthenticateToken(req, res, next) {
-  const token = req.cookies?.accessToken;
+  let token;
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith("Bearer")
+  ) {
+    token = req.headers.authorization.split(" ")[1];
+  }
   if (!token) {
     req.user = null;
     return next();
@@ -39,7 +50,7 @@ export function optAuthenticateToken(req, res, next) {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = {
       id: decoded.id,
-      email: decoded.email,
+      username: decoded.username,
       role: decoded.role,
     };
   } catch {
