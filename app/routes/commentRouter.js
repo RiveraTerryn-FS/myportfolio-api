@@ -9,11 +9,15 @@ import {
   authenticateToken,
   optAuthenticateToken,
 } from "../middleware/authenticate.js";
-
+import rateLimit from "express-rate-limit";
+const commentLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000,
+  max: 20,
+});
 const router = express.Router();
 
 router.get("/:postId", optAuthenticateToken, getCommentsByPostId);
-router.post("/", authenticateToken, createComment);
+router.post("/", commentLimiter, authenticateToken, createComment);
 router.put("/:id", authenticateToken, updateComment);
 router.delete("/:id", authenticateToken, deleteComment);
 

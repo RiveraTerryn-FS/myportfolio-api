@@ -7,16 +7,52 @@ import {
   newJti,
   refreshCookieOptions,
 } from "../utils/authToken.js";
+import { body, validationResult } from "express-validator";
+
+export const validateLogin = [
+  body("username")
+    .isString()
+    .trim()
+    .isLength({ min: 3, max: 100 }),
+
+  body("password")
+    .isString()
+    .isLength({ min: 6, max: 100 }),
+];
+export const validateRegister = [
+  body("email")
+    .isEmail()
+    .withMessage("Please enter a valid email address.")
+    .normalizeEmail(),
+
+  body("username")
+    .isString()
+    .trim()
+    .isLength({ min: 3, max: 20 })
+    .withMessage("Username must be between 3 and 20 characters.")
+    .matches(/^[a-zA-Z0-9_]+$/)
+    .withMessage("Username can only contain letters, numbers, and underscores."),
+
+  body("password")
+    .isString()
+    .isLength({ min: 6 })
+    .withMessage("Password must be at least 6 characters long."),
+];
 // REGISTER
 export const register = async (req, res, next) => {
   try {
-    let { username, password, email } = req.body;
-    if (!username || !password || !email) {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
       return res.status(400).json({
         success: false,
-        error: "Username, email address, and password required",
+        errors: errors.array().map(e => ({
+          field: e.path,
+          message: e.msg,
+        })),
       });
     }
+
+    let { username, password, email } = req.body;
 
     username = username.toLowerCase();
     email = email.toLowerCase();
@@ -61,6 +97,14 @@ export const register = async (req, res, next) => {
 export const login = async (req, res, next) => {
   try {
     const { username, password } = req.body;
+
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        errors: errors.array(),
+      });
+    }
     const identifier = username.toLowerCase();
     const user = await User.findOne({
       $or: [{ username: identifier }, { email: identifier }],
