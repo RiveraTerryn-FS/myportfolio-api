@@ -1,0 +1,114 @@
+[{
+  "_id": {
+    "$oid": "6992e8cb6a93b37d634b9453"
+  },
+  "slug": "firebase-tutorial",
+  "title": "Simple Firebase Login and Register Tutorial",
+  "summary": "I created this tutorial for a previous course. This tutorial walks through how to build a very simple login and register page using Firebase.",
+  "content": "This tutorial walks through how to build a very simple login and register page using Firebase.  \nIt assumes you already know the basics of React, how components work, and how to set up a starter React project.\n\n---\n\n![Login/Register Screenshot](https://terrynrivera.me/cdn/blog/firebaselogin.png)\n\n## 1. Install Firebase\n\nRun the following command in your React project:\n\n```\nnpm install firebase\n```\n\n---\n\n## 2. Create a Firebase Project\n\n1. Visit: https://console.firebase.google.com\n2. Create a new project  \n3. Add a Web App  \n4. Copy the Firebase configuration snippet  \n\n---\n\n## 3. Enable Email and Password Authentication\n\nInside Firebase:\n\n1. Go to **Build**  \n2. Go to **Authentication**  \n3. Select **Sign-in Method**  \n4. Enable **Email/Password**  \n\n---\n\n## 4. Create Your firebase.js File\n\nCreate a new file in your **src** folder and name it **firebase.js**\n\nPaste your Firebase configuration snippet from the Firebase Console and set up Firebase Auth:\n\n```\nimport { initializeApp } from \"firebase/app\";\nimport { getAuth } from \"firebase/auth\";\n\nconst firebaseConfig = {\n  apiKey: \"YOUR_API_KEY\",\n  authDomain: \"YOUR_AUTH_DOMAIN\",\n  projectId: \"YOUR_PROJECT_ID\",\n  appId: \"YOUR_APP_ID\"\n};\n\nconst app = initializeApp(firebaseConfig);\nexport const auth = getAuth(app);\n```\n\nReplace the placeholder values with your real Firebase project configuration.\n\n---\n\n## 5. Full Example: Simple Login and Register Page\n\nCopy this into your **App.jsx**:\n\n```\nimport { useState } from \"react\";\nimport { auth } from \"./firebase\";\nimport {\n  createUserWithEmailAndPassword,\n  signInWithEmailAndPassword\n} from \"firebase/auth\";\n\nexport default function App() {\n  const [email, setEmail] = useState(\"\");\n  const [password, setPassword] = useState(\"\");\n  const [user, setUser] = useState(null);\n  const [error, setError] = useState(\"\");\n\n  const register = async () => {\n    try {\n      const res = await createUserWithEmailAndPassword(auth, email, password);\n      setUser(res.user);\n      setError(\"\");\n    } catch (err) {\n      setError(err.message);\n    }\n  };\n\n  const login = async () => {\n    try {\n      const res = await signInWithEmailAndPassword(auth, email, password);\n      setUser(res.user);\n      setError(\"\");\n    } catch (err) {\n      setError(err.message);\n    }\n  };\n\n  const logout = () => {\n    auth.signOut();\n    setUser(null);\n  };\n\n  return (\n    <section style={{ padding: \"20px\" }}>\n      <h2>Simple Firebase Auth</h2>\n\n      {!user && (\n        <>\n          <input\n            type=\"email\"\n            placeholder=\"Email\"\n            onChange={(e) => setEmail(e.target.value)}\n            autoComplete=\"email\"\n            id=\"email\"\n          />\n\n          <input\n            type=\"password\"\n            placeholder=\"Password\"\n            id=\"password\"\n            onChange={(e) => setPassword(e.target.value)}\n          />\n\n          <button onClick={login}>Login</button>\n          <button onClick={register}>Register</button>\n\n          {error && <p style={{ color: \"red\" }}>{error}</p>}\n        </>\n      )}\n\n      {user && (\n        <section>\n          <h3>Logged in as: {user.email}</h3>\n          <button onClick={logout}>Logout</button>\n        </section>\n      )}\n    </section>\n  );\n}\n```\n\n---\n\n## 6. How the Authentication Works\n\n### Main Firebase Functions Used:\n\n- **createUserWithEmailAndPassword** → registers a new user  \n- **signInWithEmailAndPassword** → logs in an existing user  \n- **signOut** → logs the user out  \n\n---\n\n## 7. Summary\n\nThis tutorial covered:\n\n- Installing Firebase  \n- Setting up a Firebase project  \n- Enabling Email/Password authentication  \n- Creating a basic React page to log in and register users  \n\nYou now have a fully working Firebase authentication starter!",
+  "type": "tutorial",
+  "views": 130,
+  "likes": 0,
+  "user": "USER_OBJECT",
+  "createdAt": {
+    "$date": "2026-02-14T00:00:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-27T09:51:11.518Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6992e8cb6a93b37d634b9454"
+  },
+  "slug": "expressjs-pokeapi",
+  "title": "ExpressJS and PokeAPI",
+  "summary": "A small Express app I built for a course using the PokeAPI.",
+  "content": "In a previous course, we had to work with the PokeAPI, but I wanted to go a bit further than the basic requirements. Instead of just fetching data, I focused on making the app more visually appealing and adding extra functionality. The backend uses Express to handle requests to the PokeAPI, and the app can be run locally using Live Server and the server on port 3000. Overall, it was a fun project that helped me better understand working with external APIs and structuring a simple Express app. You can check out the GitHub repo here: \n    [Random Pokémon Generator](https://github.com/RiveraTerryn-FS/randompokemongen)",
+  "type": "notes",
+  "views": 44,
+  "likes": 0,
+  "user": "USER_OBJECT",
+  "createdAt": {
+    "$date": "2026-02-10T00:00:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-27T11:42:07.427Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6992e8cb6a93b37d634b9455"
+  },
+  "slug": "why-folder-structure-matters",
+  "title": "Why Folder Structure Matters More Than I Expected",
+  "summary": "A short post on how better folder structure has made my projects easier to work with and maintain.",
+  "content": "While working on multiple projects this term, one thing that stood out to me was how important folder structure really is. In earlier projects, I tended to put most of my logic into a small number of files just to get things working. While that approach worked at first, it quickly became hard to read and even harder to debug.\n\nAs projects grew larger, separating concerns into clearly named folders made a big difference. Breaking things up into areas like components, data, styles, and utilities helped me understand my own code better when coming back to it later. It also made it easier to spot bugs and make changes without accidentally breaking unrelated features.\n\nAnother benefit of better structure was reusability. When components and logic are organized cleanly, it becomes much easier to reuse them across different pages or projects. Instead of rewriting similar code, I could move or import existing pieces with confidence.\n\nOverall, improving my folder structure has helped me write cleaner code and spend less time searching through files. It is something I plan to continue working on in future projects.\n  ",
+  "type": "notes",
+  "views": 30,
+  "likes": 0,
+  "user": "USER_OBJECT",
+  "createdAt": {
+    "$date": "2026-02-10T00:00:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-27T14:40:35.670Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6992e8cb6a93b37d634b9456"
+  },
+  "slug": "nextjs-theme-provider",
+  "title": "Adding a Theme Provider in Next.js",
+  "summary": "A short explanation of why a ThemeProvider is needed when using CSS-in-JS with the App Router.",
+  "content": "The official Next.js documentation already does a good job explaining how to use CSS-in-JS libraries like styled-components with the App Router. One piece that can still feel confusing, however, is \n**why a ThemeProvider is needed and where it should live**.\n\nThis post focuses only on that part.\n\n## Why use a ThemeProvider?\n\nA ThemeProvider allows you to define a shared set of design values (colors, shadows, spacing, etc.) and access them inside styled-components through the *theme prop*.\n\nInstead of hardcoding values in every component, you define them once and reuse them consistently across your app.\n\n## Where the ThemeProvider belongs in the App Router\n\nWith the App Router, layouts are rendered on the server by default. Since styled-components relies on client-side rendering for styles, the ThemeProvider must be added inside a **client component**.\n\nA common pattern is to create a small provider wrapper and use it in the root layout.\n\n### Example theme file\n\nHere is a simple theme object:\n```\n    export const lightTheme = {\n        colors: {\n          background: \"#ffffff\",\n          text: \"#1f1f1f\",\n          border: \"#eaeaea\",\n        },\n      };\n```\n## Creating a provider component\n\nThe provider itself must be a client component:\n```\n    \"use client\";\n      import { ThemeProvider } from \"styled-components\";\n      import { lightTheme } from \"@/themes/light\";\n      export default function Providers({ children }) {\n        return (\n          <ThemeProvider theme={lightTheme}>\n            {children}\n          </ThemeProvider>\n        );\n      }\n```\n## Using the provider in the root layout\n\nThe provider is then wrapped around the app inside `layout.tsx`:\n```\n    import Providers from \"@/components/Providers\";\n\n      export default function RootLayout({ children }) {\n        return (\n          <html lang=\"en\">\n            <body>\n              <Providers>\n                {children}\n              </Providers>\n            </body>\n          </html>\n        );\n      }\n```\nOnce this is in place, any styled-component in the app can access the theme through the\n\n`theme` prop.\n\n## Final thoughts\n\nThe Next.js documentation explains the setup in detail, but the key takeaway is simple: the ThemeProvider must live inside a client component and be applied at the layout level. Once that is done, styled-components and theming work consistently across pages.\n",
+  "type": "notes",
+  "views": 74,
+  "likes": 0,
+  "user": "USER_OBJECT",
+  "createdAt": {
+    "$date": "2026-02-10T00:00:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-27T16:49:51.047Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "699c877852e8910b258de666"
+  },
+  "slug": "getting-started-with-react-native",
+  "title": "Getting Started with React Native",
+  "summary": "An overview of React Native and how it is easy to learn if you already know React, including styling and API integration.",
+  "content": "![React Native Cover](https://terrynrivera.me/cdn/blog/react-native-cover.png)\n\nIf you already understand React basics like components, props, state, and hooks, then React Native feels very familiar and is not hard to pick up.\n\nReact Native is a framework created by Facebook (now Meta) that allows developers to build mobile applications using JavaScript and React. Instead of building web apps that run in a browser, you build apps that run on iOS and Android using the same component-based structure.\n\nOne of the biggest advantages of React Native is how similar it is to React. You still create functional components, use hooks like useState and useEffect, and structure your project in a similar way. The main difference is that instead of using HTML elements like div, h1, or p, you use built-in components such as View, Text, and ScrollView. This makes the transition from web development to mobile development much easier.\n\nStyling in React Native is also simple. It does not use traditional CSS files. Instead, styles are written in JavaScript using objects. The syntax feels similar to styled-components in React because you are writing styles directly inside your component files. You define styles using StyleSheet.create and apply them to components. It keeps everything organized and easy to manage.\n\nAnother thing I like about React Native is how easy it is to connect to an API. You can use fetch or libraries like axios just like you would in a regular React app. The process of making API calls, storing the response in state, and rendering the data to the screen is almost the same as it is on the web.\n\nOverall, React Native is a great option for developers who already know React and want to move into mobile app development.",
+  "type": "notes",
+  "views": 112,
+  "likes": 0,
+  "user": {
+    "$oid": "6993d531e8f8f7e64f8f5041"
+  },
+  "createdAt": {
+    "$date": "2026-02-23T00:00:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-27T19:40:55.274Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "699f659e5826ae8f8f8de667"
+  },
+  "title": "Password Hashing and bcrypt",
+  "slug": "password-hashing-and-bcrypt",
+  "summary": "A short explanation of why password hashing matters and how bcrypt protects user credentials.",
+  "content": "![Password-Hashing-Bcrypt/Screenshot](https://terrynrivera.me/cdn/blog/passwordhash-cover.png)\n\nWhen building an application with user authentication, one of the most important security practices is password hashing. You should never store plain text passwords in your database. If your database is ever leaked, plain text passwords would immediately expose every user's account.\n\nInstead, passwords should be hashed.\n\n---\n\n## What Is Password Hashing?\n\nHashing converts a password into a scrambled string of characters using a cryptographic algorithm. Unlike encryption, hashing is one way. Once a password is hashed, it cannot be turned back into the original password.\n\nFor example, instead of storing:\n\n```\npassword123\n```\n\nYou store something like:\n\n```\n$2b$10$9uGxK1pF6...\n```\n\nEven if someone gains access to the database, they cannot easily determine the original password from that hash.\n\n---\n\n## Why bcrypt?\n\nbcrypt is a popular hashing function designed specifically for passwords. It improves security in two major ways:\n\n- It automatically adds a salt  \n- It is intentionally slow  \n\nA salt is a random value added to the password before hashing. This ensures that even if two users have the same password, their hashes will still be different. This helps protect against rainbow table attacks.\n\nbcrypt is also designed to be slow on purpose. That may sound strange, but it makes brute force attacks much harder. If an attacker tries to guess passwords millions of times per second, a slow hashing function significantly limits how fast they can do that.\n\n---\n\n## How It Works in Code\n\nWhen a user registers:\n\n```js\nconst hashedPassword = await bcrypt.hash(password, 10);\n```\n\nWhen they log in:\n\n```js\nconst isMatch = await bcrypt.compare(password, user.password);\n```\n\nbcrypt handles the salt and comparison internally, which makes it both secure and easy to use.\n\n---\n\nIn short, bcrypt protects user passwords by hashing them securely, adding randomness with salting, and slowing down potential attackers. Any modern web application that stores user credentials should use a secure hashing function like bcrypt instead of saving passwords directly.",
+  "createdAt": {
+    "$date": "2026-02-25T21:11:58.015Z"
+  },
+  "type": "notes",
+  "updatedAt": {
+    "$date": "2026-02-27T23:06:12.176Z"
+  },
+  "views": 11
+}]
