@@ -107,16 +107,17 @@ export const login = async (req, res, next) => {
     }
     const identifier = username.toLowerCase();
     const user = await User.findOne({
-      $or: [{ username: identifier }, { email: identifier }],
+      $or: [
+        { username: identifier },
+        { email: identifier }
+      ],
     }).select("+password");
-
-    if (!user) {
+    if (!user || !user.active) {
       return res.status(401).json({
         success: false,
         error: "Incorrect username or password",
       });
     }
-
     const match = await bcrypt.compare(password, user.password);
     if (!match) {
       return res.status(401).json({
@@ -157,7 +158,7 @@ export const refresh = async (req, res) => {
       process.env.JWT_REFRESH_SECRET
     );
     const user = await User.findById(decoded.id);
-    if (!user) {
+    if (!user || !user.active) {
       return res.status(401).json({ success: false });
     }
     const accessToken = signAccessToken(user);
